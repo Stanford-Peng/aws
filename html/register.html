@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/login.css">
+    <title>Register</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    
+</head>
+
+<body>
+    <div class="wrapper fadeInDown">
+        <div id="formContent">
+            <!-- Register image -->
+            <div class="fadeIn first">
+                <img src="../image/2.png" id="icon" alt="login Image" />
+                <br />
+            </div>
+
+            <!-- Register Form -->
+            <form>
+                <input type="email" id="email" class="fadeIn second" name="email" placeholder="Email" required>
+                <input type="text" id="fname" class="fadeIn second" name="fname" placeholder="First name" required>
+                <input type="text" id="lname" class="fadeIn second" name="lname" placeholder="Last name" required>
+                <input type="password" id="password" class="fadeIn third" name="password" placeholder="password"
+                    required minlength="6">
+                <input type="submit" class="fadeIn fourth" value="Submit">
+            </form>
+
+            <div>
+
+            </div>
+
+            <!-- Back to login -->
+            <div id="formFooter">
+                <a class="underlineHover" href="#">Back to Login</a>
+            </div>
+
+        </div>
+    </div>
+</body>
+
+</html>
