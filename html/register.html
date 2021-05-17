@@ -8,9 +8,9 @@
     <link rel="stylesheet" href="../css/login.css">
     
     <title>Register</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <!-- Cognito scripts -->
     <script src="../js/amazon-cognito-identity.min.js"></script>
     <script src="../js/config.js"></script>
@@ -27,7 +27,7 @@
             </div>
 
             <!-- Register Form -->
-            <form>
+            <form action="javascript:registerButton();" method="post">
                 <input type="email" id="email" class="fadeIn second" name="email" placeholder="Email" required>
                 <input type="text" id="fname" class="fadeIn second" name="fname" placeholder="First name" required>
                 <input type="text" id="lname" class="fadeIn second" name="lname" placeholder="Last name" required>
@@ -42,11 +42,68 @@
 
             <!-- Back to login -->
             <div id="formFooter">
-                <a class="underlineHover" href="#">Back to Login</a>
+                <a class="underlineHover" href="login.html">Back to Login</a>
             </div>
 
         </div>
     </div>
 </body>
+<script>
+    var username;
+    var password;
+    var firstName;
+    var lastName;
+    var poolData;
 
+    function registerButton(){
+        console.log("User clicked Register Button");
+        firstName = document.getElementById("fname").value;
+        lastName = document.getElementById("lname").value;
+        username = document.getElementById("email").value;
+        password = document.getElementById("password").value;
+        console.log(lastName);
+        console.log(firstName);
+
+        poolData = {
+            UserPoolId: _config.cognito.userPoolId,
+            ClientId: _config.cognito.clientId
+        };
+
+        var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+        var attributeList = [];
+
+        var dataEmail = {
+            Name: 'email',
+            Value: username,
+        };
+        var dataFamName = {
+            Name: 'family_name',
+            Value: lastName,
+        }
+        var dataFirstName = {
+            Name: 'given_name',
+            Value: firstName,
+        }
+
+        var attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
+        var attributeFamName = new AmazonCognitoIdentity.CognitoUserAttribute(dataFamName);
+        var attributeFirstName = new AmazonCognitoIdentity.CognitoUserAttribute(dataFirstName);
+
+        attributeList.push(attributeEmail);
+        attributeList.push(attributeFamName);
+        attributeList.push(attributeFirstName);
+
+        userPool.signUp(username, password, attributeList, null, function(err, result){
+            if(err){
+                alert(err.message || JSON.stringify(err));
+                return;
+            }
+            cognitoUser = result.user;
+            console.log('Registered user: ' + cognitoUser.getUsername());
+            //Change elements of page
+            alert("Registration Successful. Please check your email for verification link");
+        })
+        
+    }
+</script>
 </html>
