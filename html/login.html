@@ -7,9 +7,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/login.css">
     <title>Login</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    
+    <!-- Cognito scripts -->
+    <script src="../js/amazon-cognito-identity.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.7.16.min.js"></script>
 </head>
 
 <body>
@@ -22,7 +27,7 @@
             </div>
 
             <!-- Login Form -->
-            <form>
+            <form action="javascript:loginButton();" method="post">
                 <input type="email" id="email" class="fadeIn second" name="email" placeholder="Email" required>
                 <input type="password" id="password" class="fadeIn third" name="password" placeholder="password"
                     required minlength="6">
@@ -33,14 +38,48 @@
 
             <!-- Forget Passowrd -->
             <div id="formFooter">
-                <a class="underlineHover" href="#">Register now</a>
+                <a class="underlineHover" href="register.html">Register now</a>
                 <br />
                 <a class="underlineHover" href="#">Forgot Password?</a>
-
             </div>
-
         </div>
     </div>
 </body>
+
+<script>
+    function loginButton(){
+        var authenticationData = {
+            Username: document.getElementById("email").value,
+            Password: document.getElementById("password").value,
+        };
+        var authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(authenticationData);
+
+        poolData = {
+            UserPoolId: _config.cognito.userPoolId,
+            ClientId: _config.cognito.clientId
+        };
+
+        var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+        var userData = {
+            Username: document.getElementById("email").value,
+            Pool: userPool,
+        };
+
+        var cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+        cognitoUser.authenticateUser(authenticationDetails, {
+            onSuccess: function(result) {
+                var accessToken = result.getAccessToken().getJwtToken();
+                console.log("Access token: " + accessToken);
+                window.location.href= "main.html";
+            },
+
+            onFailure: function(err){
+                alert(err.message || JSON.stringify(err));
+            },
+        });
+
+    }
+</script>
 
 </html>

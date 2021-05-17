@@ -5,10 +5,13 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/main.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <title>Dashboard</title>
+    <!-- Cognito scripts -->
+    <script src="../js/amazon-cognito-identity.min.js"></script>
+    <script src="../js/config.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-inverse">
@@ -21,11 +24,62 @@
             <li><a href="#">About us</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="#"><span class="glyphicon glyphicon-log-in"></span>  Logout</a></li>
+            <li><a href='javascript:logout();'><span class="glyphicon glyphicon-log-in"></span>  Logout</a></li>
           </ul>
         </div>
-      </nav>
-
-      
+    </nav>
+    <div>
+      <h3 id="email"></h3>
+      <h3 id="fname"></h3>
+      <h3 id="lname"></h3>
+    </div>
 </body>
+
+<script>
+var data = {
+  UserPoolId: _config.cognito.userPoolId,
+  ClientId: _config.cognito.clientId,
+};
+
+var userPool = new AmazonCognitoIdentity.CognitoUserPool(data);
+var cognitoUser = userPool.getCurrentUser();
+
+window.onload = function(){
+  if(cognitoUser != null){
+    cognitoUser.getSession(function(err, session){
+      if(err){
+        alert(err);
+        return;
+      }
+      console.log('session validity = ' + session.isValid());
+      // Setting the profile info
+      cognitoUser.getUserAttributes(function(err, result){
+        if(err){
+          console.log(err);
+          return;
+        }
+        console.log(result);
+        document.getElementById("fname").innerHTML = "Welcome, " + result[2].getValue();
+        document.getElementById("email").innerHTML = result[4].getValue();
+        //document.getElementById("lname").innerHTML = result[3].getValue();
+      });
+
+    });
+  } else {
+    alert("Invalid session. Please login!");
+    window.location.href= "login.html";
+  }
+}
+
+function logout(){
+  if (cognitoUser != null){
+    cognitoUser.signOut();
+    console.log("logged out");
+    window.location.href= "login.html";
+  }
+}
+
+
+
+</script>
 </html>
