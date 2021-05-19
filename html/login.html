@@ -70,7 +70,10 @@
         cognitoUser.authenticateUser(authenticationDetails, {
             onSuccess: function(result) {
                 var accessToken = result.getAccessToken().getJwtToken();
+                var idToken = result.idToken.jwtToken;
                 console.log("Access token: " + accessToken);
+                console.log("ID token: " + idToken);
+                alert("Access token: " + accessToken);
                 window.location.href= "main.html";
             },
 
