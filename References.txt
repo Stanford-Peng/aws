@@ -1,0 +1,5 @@
+Image Upload: https://codepen.io/morten-olsen/pen/eNWyjj
+
+Cognito Register: https://www.youtube.com/watch?v=pDMkL2cObC0
+
+Cognito Login & Auth: https://www.youtube.com/watch?v=rOaUyCM-fcE

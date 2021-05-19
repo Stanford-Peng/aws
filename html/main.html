@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="../css/main.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <title>Dashboard</title>
     <!-- Cognito scripts -->
@@ -17,7 +19,7 @@
     <nav class="navbar navbar-inverse">
         <div class="container-fluid">
           <div class="navbar-header">
-            <a class="navbar-brand" href="#">Bruh</a>
+            <a class="navbar-brand" href="#">Tag Tag</a>
           </div>
           <ul class="nav navbar-nav">
             <li class="active"><a href="#">Home</a></li>
@@ -28,11 +30,26 @@
           </ul>
         </div>
     </nav>
+  <div class="content_box">
     <div>
       <h3 id="email"></h3>
       <h3 id="fname"></h3>
       <h3 id="lname"></h3>
     </div>
+
+    <!-- Image Upload Block -->
+    
+    <div id="container">
+      <h3> Upload Image </h3>
+      <div class="wrapper">
+        <button class="no-image" id="img-result">Upload Image</button>
+      </div>
+      <br>
+      <button id="uploadBtn" class="show-button">Upload</button>
+      <br>
+      <div class="spinner"><div id="spinner"></div></div>
+    </div>
+  </div>
 </body>
 
 <script>
@@ -43,6 +60,7 @@ var data = {
 
 var userPool = new AmazonCognitoIdentity.CognitoUserPool(data);
 var cognitoUser = userPool.getCurrentUser();
+var idToken;
 
 window.onload = function(){
   if(cognitoUser != null){
@@ -51,6 +69,7 @@ window.onload = function(){
         alert(err);
         return;
       }
+      idToken = session.idToken.jwtToken;
       console.log('session validity = ' + session.isValid());
       // Setting the profile info
       cognitoUser.getUserAttributes(function(err, result){
@@ -63,7 +82,7 @@ window.onload = function(){
         document.getElementById("email").innerHTML = result[4].getValue();
         //document.getElementById("lname").innerHTML = result[3].getValue();
       });
-
+      
     });
   } else {
     alert("Invalid session. Please login!");
@@ -79,7 +98,202 @@ function logout(){
   }
 }
 
+//Image Upload Function
+(function () {
+  var request;
+  var uploader = document.createElement('input'),
+    image = document.getElementById('img-result');
 
+  uploader.type = 'file';
+  uploader.accept = 'image/*';
+
+  image.onclick = function() {
+    uploader.click();
+  }
+
+  uploader.onchange = function() {
+    var reader = new FileReader();
+    reader.onload = function(evt) {
+      image.classList.remove('no-image');
+      image.style.backgroundImage = 'url(' + evt.target.result + ')';
+      var req = {
+        name: uploader.files[0].name,
+        file: evt.target.result,
+      };
+      console.log(uploader.files[0].name);
+      document.getElementById('uploadBtn').innerHTML = "Upload:  " + uploader.files[0].name;
+      document.querySelector('.show-button').style.display = 'block';
+      request = JSON.stringify(req);
+    }
+    reader.readAsDataURL(uploader.files[0]);
+  }
+    
+  document.querySelector('.show-button').onclick = function () {
+    document.getElementById('spinner').style.display = 'block';
+    console.log("Uploading Image...");
+    fetch("https://zqlkkv8z12.execute-api.us-east-1.amazonaws.com/development/api/upload-image",{
+      method: 'POST',
+      body: request,
+      headers:{
+        "jwt_token": idToken
+      }
+    })
+    .then(response => response.json())
+    .then(result => {
+      console.log('Success: ', result);
+      alert("Upload Successful");
+      document.getElementById('spinner').style.display = 'none';
+      document.querySelector('.show-button').style.display = 'none';
+    })
+    .catch((error)=>{
+      console.error('Error while POST:', error);
+    })
+
+  };
+})();
 
 </script>
+
+<style>
+  @-webkit-keyframes roll {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0;
+    transform: translate(-150%, -50%) rotate(-90deg) scale(0.3);
+    box-shadow: none;
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0%, 0%) rotate(0deg) scale(1);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+  }
+}
+@keyframes roll {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0;
+    transform: translate(-150%, -50%) rotate(-90deg) scale(0.3);
+    box-shadow: none;
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0%, 0%) rotate(0deg) scale(1);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+.content_box{
+  padding: 16px;
+}
+.wrapper {
+  -webkit-animation: roll 1.5s;
+          animation: roll 1.5s;
+  padding: 25px;
+  background: #16a085;
+  border-radius: 50%;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+  width: fit-content;
+  margin: auto;
+}
+#container{
+  position: fixed;
+  left: 40%;
+  top: 30%;
+  text-align: center;
+}
+.wrapper:active #img-result {
+  margin-top: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.wrapper #img-result {
+  cursor: pointer;
+  margin: 0;
+  position: relative;
+  background: #1abc9c;
+  background-size: cover;
+  background-position: center;
+  display: block;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+  color: rgba(0, 0, 0, 0);
+  transition: box-shadow 0.3s, margin 0.3s, background-image 1.5s;
+}
+.wrapper #img-result.no-image:before {
+  font-family: 'FontAwesome';
+  content: "\f030";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  color: #fff;
+  font-size: 48px;
+  opacity: 0.8;
+  transform: translate(-50%, -50%);
+  text-shadow: 0 0px 5px rgba(0, 0, 0, 0.4);
+}
+.wrapper button {
+  margin-top: 20px;
+  display: block;
+  font-family: 'Open Sans Condensed', sans-serif;
+  background: #1abc9c;
+  width: 100%;
+  border: none;
+  color: #fff;
+  padding: 10px;
+  letter-spacing: 1.3px;
+  font-size: 1.05em;
+  border-radius: 5px;
+  box-shadow: 0 4px 5px rgba(0, 0, 0, 0.3);
+  outline: 0;
+  transition: box-shadow 0.3s, margin-top 0.3s, padding 0.3s;
+}
+.wrapper button:active {
+  box-shadow: none;
+  margin-top: 24px;
+  padding: 8px;
+}
+.show-button {
+  background: #264974;
+  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  display: none;
+  margin: auto;
+}
+
+/*Spinner*/
+
+@keyframes spinner {
+  from {
+    transform: rotate(0deg);
+  } to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner{
+  justify-content: center;
+  display: flex;
+  align-items: center;
+}
+#spinner {
+  min-width: 40px;
+  display: none;
+  min-height: 40px;
+  border: 5px solid rgba(255,255,255,.1);
+  border-right: 5px solid orange;
+  border-radius: 50%;
+  animation: spinner 1s linear infinite;
+}
+
+
+</style>
 </html>
