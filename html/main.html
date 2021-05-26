@@ -19,11 +19,11 @@
     <nav class="navbar navbar-inverse">
         <div class="container-fluid">
           <div class="navbar-header">
-            <a class="navbar-brand" href="#">Tag Tag</a>
+            <a class="navbar-brand" href="main.html">Tag Tag</a>
           </div>
           <ul class="nav navbar-nav">
-            <li class="active"><a href="#">Home</a></li>
-            <li><a href="#">About us</a></li>
+            <li class="active"><a href="#">Upload</a></li>
+            <li><a href="findImage.html">Find Images</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li><a href='javascript:logout();'><span class="glyphicon glyphicon-log-in"></span>  Logout</a></li>
@@ -131,7 +131,7 @@ function logout(){
   document.querySelector('.show-button').onclick = function () {
     document.getElementById('spinner').style.display = 'block';
     console.log("Uploading Image...");
-    fetch("https://zqlkkv8z12.execute-api.us-east-1.amazonaws.com/development/api/upload-image",{
+    fetch(_config.api.uploadUrl,{
       method: 'POST',
       body: request,
       headers:{

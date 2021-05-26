@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/main.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <!-- Nano Gallery https://nanogallery2.nanostudio.org/documentation.html-->
+    <script src="../js/jquery.nanogallery2.min.js"></script>
+    <link rel="stylesheet" href="../css/nanogallery2.min.css">
+
+    <title>Dashboard</title>
+    <!-- Cognito scripts -->
+    <script src="../js/amazon-cognito-identity.min.js"></script>
+    <script src="../js/config.js"></script>
+</head>
+<!-- NavBar-->
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="main.html">Tag Tag</a>
+          </div>
+          <ul class="nav navbar-nav">
+            <li><a href="main.html">Upload</a></li>
+            <li class="active"><a href="#">Find Images</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href='javascript:logout();'><span class="glyphicon glyphicon-log-in"></span>  Logout</a></li>
+          </ul>
+        </div>
+    </nav>
+    
+<!-- Find Image Block -->
+  <div class="content_box">
+    <!-- Search Box-->
+    <div>
+        <h3> Find Image </h3>
+        <div class="input-group" style="display: inline-flex;">
+            <input id="input" type="text" class="form-control rounded" placeholder="E.g. People, Elephant, Laptop..." aria-label="Search"
+              aria-describedby="search-addon"/>
+            <button type="button" id="searchBtn" class="btn btn-outline-primary" onclick="searchTags()">Search Tag</button>
+            <button type="button" id="deleteBtn" onclick="deleteSelection()" style="margin-left: 12px; visibility: hidden;" class="btn btn-danger"> Delete Selected Images </button>
+          </div>
+    </div>
+    <button type="button" id="clearBtn" onclick="clearInput()" style="visibility: hidden;" class="btn btn-warning"> Clear Input </button>
+    <br>
+    <!-- Display Images -->
+    <div id="my_nanogallery2"></div>
+    <h3 id="no_items"> </h3>
+
+    <!-- Display Tags -->
+    <div>
+        <h3> Add Tags </h3>
+        <div id= "tags_container">
+
+        </div>
+    </div>
+  </div>
+</body>
+
+<script>
+var selectedImages = [];
+function searchTags(){
+    jQuery("#my_nanogallery2").nanogallery2('destroy');
+    var input = document.getElementById("input").value.toLowerCase().trim();
+    var inputArray = input.split(" ");
+    var jsonBody = {
+        tags: inputArray,
+    }
+    jsonBody = JSON.stringify(jsonBody);
+    //document.getElementById('spinner').style.display = 'block';
+    console.log(jsonBody);
+
+    fetch(_config.api.findByTagsUrl,{
+      method: 'POST',
+      body: jsonBody,
+      headers:{
+        "jwt_token": idToken
+      }
+    })
+    .then(response => response.json())
+    .then(result => {
+      console.log('Successfully Found Images by Tag: ', result);
+      clearInput();
+      var links = result.links;
+      var items = [];
+      
+      links.forEach(element => {
+        var n = element.lastIndexOf("/")+1;
+        var elname = element.substring(n, element.length);
+        console.log(elname);
+        var item = {};
+        item.src = elname,
+        item.srct = elname,
+        item.title = elname
+        console.log(item);
+        items.push(item);
+      });
+
+      if(items.length == 0){
+        document.getElementById("no_items").innerHTML = "No Images Found";
+        document.getElementById("deleteBtn").style.visibility = "hidden";
+      } else {
+        document.getElementById("no_items").innerHTML = "";
+        document.getElementById("deleteBtn").style.visibility = "visible";
+      }
+
+      //Display Images - SRC: https://codepen.io/Kris-B/pen/RyaLaG
+      //Nano Gallery Functions - https://codepen.io/Kris-B/pen/wJKowg
+      jQuery("#my_nanogallery2").nanogallery2({
+        thumbnailSelectable :   true,   // enables selection mode
+        items,
+        thumbnailWidth:         'auto',
+        thumbnailHeight:        150,
+        itemsBaseURL: 'https://ass2-images-1.s3.amazonaws.com/',
+        thumbnailHoverEffect2: null,
+        locationHash: false
+      });
+      //document.getElementById('spinner').style.display = 'none';
+    })
+    .catch((error)=>{
+      console.error('Error while POST:', error);
+    })
+}
+
+$("#my_nanogallery2").on( 'itemSelected.nanogallery2 itemUnSelected.nanogallery2', function() {
+  var ngy2data = $("#my_nanogallery2").nanogallery2('data');
+  
+  // counter 
+  //jQuery('#nb_selected').text(ngy2data.gallery.nbSelected);
+  
+  // selected items
+  var sel = '';
+  ngy2data.items.forEach( function(item) {
+    if( item.selected ) {
+      selectedImages.push(item.title);
+    }
+  });
+  jQuery('#selection').text(sel);
+});
+
+// Delete selected Images
+function deleteSelection(){
+    if(selectedImages.length > 0){
+        jsonBody = [];
+        selectedImages.forEach(element => {
+            var jsoncontent = {};
+            jsoncontent.name = element;
+            jsonBody.push(jsoncontent);
+        });
+        jsonBody = JSON.stringify(jsonBody);
+        fetch(_config.api.findByTagsUrl,{
+            method: 'DELETE',
+            body: jsonBody,
+            headers:{
+                "jwt_token": idToken
+            }   
+        })
+        .then(response => response.json())
+        .then(result => {
+            console.log('Successfully Deleted Images: ', result);
+            //Delete image from gallery if successful
+            var ngy2data = $("#my_nanogallery2").nanogallery2('data');
+            ngy2data.items.forEach( function(item) {
+                if( item.selected ) {
+                item.delete();
+                }
+            });
+            $("#my_nanogallery2").nanogallery2('resize');
+        })
+        .catch((error)=>{
+            console.error('Error while Delete:', error);
+            alert("Could not delete! Error occurred");
+        });
+    }
+}
+
+//Validate User Session
+var data = {
+  UserPoolId: _config.cognito.userPoolId,
+  ClientId: _config.cognito.clientId,
+};
+
+var userPool = new AmazonCognitoIdentity.CognitoUserPool(data);
+var cognitoUser = userPool.getCurrentUser();
+var idToken;
+
+//On Load
+window.onload = function(){
+  if(cognitoUser != null){
+    cognitoUser.getSession(function(err, session){
+      if(err){
+        alert(err);
+        return;
+      }
+      idToken = session.idToken.jwtToken;
+      console.log('session validity = ' + session.isValid());
+      // Setting the profile info
+      cognitoUser.getUserAttributes(function(err, result){
+        if(err){
+          console.log(err);
+          return;
+        }
+        console.log(result);
+        document.getElementById("fname").innerHTML = "Welcome, " + result[2].getValue();
+        document.getElementById("email").innerHTML = result[4].getValue();
+        //document.getElementById("lname").innerHTML = result[3].getValue();
+      });
+      
+    });
+  } else {
+    alert("Invalid session. Please login!");
+    window.location.href= "login.html";
+  }
+
+//Display Tags
+fetch(_config.api.findTagsUrl,{
+      method: 'GET',
+      headers:{
+        "jwt_token": idToken
+      }
+    })
+    .then(response => response.json())
+    .then(result => {
+      console.log('Successfully Get All Tags: ', result);
+      var tags = result.tags;
+      tags.forEach(element=>{
+        var tag = document.createElement("a");
+        tag.classList.add("badge");
+        tag.classList.add("badge-primary")
+        tag.href = "#";
+        tag.addEventListener('click', function() { 
+            console.log("clicked");
+            var inputBox = document.getElementById("input");
+            inputBox.value += " " + element;
+            inputBox.focus;
+            document.getElementById("clearBtn").style.visibility = "visible";
+        });
+        tag.innerHTML = element;
+        document.getElementById("tags_container").appendChild(tag);
+      })
+    })
+    .catch((error)=>{
+        console.error('Error while GET TAGS:', error);
+         alert("Could not get tags! Error occurred");
+    });
+    
+    //Clear Input on listener
+    $('#input').on('change textInput input propertychange', function(){
+        console.log("Input changed");
+        var v = document.getElementById("input").value;
+        if(v.length > 0){
+            document.getElementById("clearBtn").style.visibility = "visible";
+        } else {
+            document.getElementById("clearBtn").style.visibility = "hidden";
+        };
+    });
+    
+}
+
+//Clear the input box
+function clearInput(){
+    document.getElementById("input").value = "";
+    document.getElementById("clearBtn").style.visibility = "hidden";
+}
+
+//Logout
+function logout(){
+  if (cognitoUser != null){
+    cognitoUser.signOut();
+    console.log("logged out");
+    window.location.href= "login.html";
+  }
+}
+
+
+</script>
+
+<style>
+.content_box{
+  padding: 16px;
+}
+#tags_container{
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+
+</style>
+</html>
