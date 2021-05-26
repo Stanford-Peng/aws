@@ -31,7 +31,7 @@
             <li class="active"><a href="#">Find Images</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li><a href='javascript:logout();'><span class="glyphicon glyphicon-log-in"></span>  Logout</a></li>
+            <li><a href='javascript:logout();'><span class="glyphicon glyphicon-log-in"></span> Logout</a></li>
           </ul>
         </div>
     </nav>
@@ -42,7 +42,7 @@
     <div>
         <h3> Find Image </h3>
         <div class="input-group" style="display: inline-flex;">
-            <input id="input" type="text" class="form-control rounded" placeholder="E.g. People, Elephant, Laptop..." aria-label="Search"
+            <input id="input" type="text" class="form-control rounded" placeholder="E.g. Person, Elephant, Dog..." aria-label="Search"
               aria-describedby="search-addon"/>
             <button type="button" id="searchBtn" class="btn btn-outline-primary" onclick="searchTags()">Search Tag</button>
             <button type="button" id="deleteBtn" onclick="deleteSelection()" style="margin-left: 12px; visibility: hidden;" class="btn btn-danger"> Delete Selected Images </button>
@@ -52,11 +52,11 @@
     <br>
     <!-- Display Images -->
     <div id="my_nanogallery2"></div>
-    <h3 id="no_items"> </h3>
+    <h1 id="no_items"> </h1>
 
     <!-- Display Tags -->
     <div>
-        <h3> Add Tags </h3>
+        <h3> All Tags </h3>
         <div id= "tags_container">
 
         </div>
@@ -104,7 +104,7 @@ function searchTags(){
       });
 
       if(items.length == 0){
-        document.getElementById("no_items").innerHTML = "No Images Found";
+        document.getElementById("no_items").innerHTML = "No Images Found. Please try other tags.";
         document.getElementById("deleteBtn").style.visibility = "hidden";
       } else {
         document.getElementById("no_items").innerHTML = "";

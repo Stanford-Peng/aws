@@ -49,6 +49,8 @@
       <br>
       <div class="spinner"><div id="spinner"></div></div>
     </div>
+    <div class="alert-box success">Image Successfully Uploaded</div>
+    </div>
   </div>
 </body>
 
@@ -141,14 +143,13 @@ function logout(){
     .then(response => response.json())
     .then(result => {
       console.log('Success: ', result);
-      alert("Upload Successful");
+      $( "div.success" ).fadeIn( 300 ).delay( 2500 ).fadeOut( 400 );
       document.getElementById('spinner').style.display = 'none';
       document.querySelector('.show-button').style.display = 'none';
     })
     .catch((error)=>{
       console.error('Error while POST:', error);
     })
-
   };
 })();
 
@@ -294,6 +295,19 @@ function logout(){
   animation: spinner 1s linear infinite;
 }
 
+.alert-box {
+	padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;  
+}
+
+.success {
+    color: #3c763d;
+    background-color: #dff0d8;
+    border-color: #d6e9c6;
+    display: none;
+}
 
 </style>
 </html>
