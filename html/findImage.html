@@ -71,9 +71,9 @@
     </div>
     <!-- Display Tags -->
     <div>
-        <h3> All Tags (click to add) </h3>
+        <h3> All Tags </h3>
+        <div class="spinner"><div id="spinner2"></div></div>
         <div id= "tags_container">
-
         </div>
     </div>
   </div>
@@ -299,7 +299,7 @@ displayAllTags();
 function displayAllTags(){
 
   document.getElementById("tags_container").innerHTML = '';
-
+  document.getElementById('spinner2').style.display = 'block';
   fetch(_config.api.findTagsUrl,{
       method: 'GET',
       headers:{
@@ -331,6 +331,7 @@ function displayAllTags(){
         tag.innerHTML = element;
         document.getElementById("tags_container").appendChild(tag);
       })
+      document.getElementById('spinner2').style.display = 'none';
     })
     .catch((error)=>{
         console.error('Error while GET TAGS:', error);
