@@ -71,7 +71,7 @@
     </div>
     <!-- Display Tags -->
     <div>
-        <h3> All Tags </h3>
+        <h3> All Tags (click to add) </h3>
         <div id= "tags_container">
 
         </div>
@@ -199,6 +199,9 @@ $("#my_nanogallery2").on( 'itemSelected.nanogallery2 itemUnSelected.nanogallery2
 
 // Delete selected Images
 function deleteSelection(){
+    if(!confirm("Are you sure you want to delete selected Images?")){
+        return;
+    }
     if(selectedImages.length > 0){
         jsonBody = {};
         var jsoncontent = [];
