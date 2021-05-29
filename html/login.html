@@ -15,6 +15,10 @@
     <script src="../js/amazon-cognito-identity.min.js"></script>
     <script src="../js/config.js"></script>
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.7.16.min.js"></script>
+
+    <!-- Google Auth -->
+    <meta name="google-signin-client_id" content="939395917142-f9bmb97fv5jr60be20nahrrh8taer9f7.apps.googleusercontent.com">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
 
 <body>
@@ -33,9 +37,9 @@
                 <input type="password" id="password" class="fadeIn third" name="password" placeholder="password"
                     required minlength="6">
                 <input type="submit" class="fadeIn fourth" value="Log In">
+                <!-- Google Sign in Button-->
+                <div class="g-signin2" data-onsuccess="onSignIn"></div>
             </form>
-            <div>
-            </div>
 
             <!-- Forget Passowrd -->
             <div id="formFooter">

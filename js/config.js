@@ -11,5 +11,8 @@ window._config ={
         findTagsUrl: 'https://4t07pj5pkk.execute-api.us-east-1.amazonaws.com/dev/api/findtags',             //HTTP GET
         modifyTagsUrl: 'https://4t07pj5pkk.execute-api.us-east-1.amazonaws.com/dev/api/modify-tags',        //HTTP POST     JSON FORMAT: {name: "xxx.jpg", tags: ["tag1", "tag2"]}
         findTagsByImageUrl: 'https://4t07pj5pkk.execute-api.us-east-1.amazonaws.com/dev/api/findtagsbyimage'//HTTP POST     JSON Format: {file:""}
+    },
+    google:{
+        clientId: '939395917142-f9bmb97fv5jr60be20nahrrh8taer9f7.apps.googleusercontent.com',
     }
 };

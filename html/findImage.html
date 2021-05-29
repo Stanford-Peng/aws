@@ -323,6 +323,7 @@ function deleteSelection(){
             });
             $("#my_nanogallery2").nanogallery2('resize');
             document.getElementById("addTagsDiv").style.display = "none";
+            document.getElementById("deleteBtn").style.visibility = "hidden";
         })
         .catch((error)=>{
             console.log('Error while Delete:', error);
