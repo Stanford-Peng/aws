@@ -124,8 +124,8 @@ function logout(){
       };
       console.log(uploader.files[0].name);
       document.getElementById('uploadBtn').innerHTML = "Upload:  " + uploader.files[0].name;
-      document.querySelector('.show-button').style.display = 'block';
       request = JSON.stringify(req);
+      document.querySelector('.show-button').style.display = 'block';
     }
     reader.readAsDataURL(uploader.files[0]);
   }

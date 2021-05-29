@@ -52,7 +52,7 @@
           </div>
                   <script>
                       function toggledFindByTags(){
-                        console.log("Toggled to find by tag");
+                        //console.log("Toggled to find by tag");
                         //Handle display / Hide
                         document.getElementById("searchByImgDiv").style.display = "none";
                         document.getElementById("searchByTagDiv").style.display = "inline-flex";
@@ -60,7 +60,7 @@
                       }
 
                       function toggledFindByImage(){
-                        console.log("Toggled to find by image");
+                        //console.log("Toggled to find by image");
                         //Handle display / Hide
                         document.getElementById("searchByTagDiv").style.display = "none";
                         document.getElementById("tagHint").style.display = "none";
@@ -83,6 +83,7 @@
           </div>
                   <script>
                       function searchImgTags(){
+                        document.getElementById('spinner').style.display = 'block';
                         var uploader = document.getElementById("uploadBtn");
                         var reader = new FileReader();
                         var request;
@@ -93,10 +94,8 @@
                           };
                           console.log(req);
                           request = JSON.stringify(req);
-                        }
-                        reader.readAsDataURL(uploader.files[0]);
 
-                        fetch(_config.api.findTagsByImageUrl,{
+                          fetch(_config.api.findTagsByImageUrl,{
                           method: 'POST',
                           body: request,
                           headers:{
@@ -106,12 +105,17 @@
                         .then(response => response.json())
                         .then(result => {
                           console.log('Success: ', result);
-                          $( "div.success" ).fadeIn( 300 ).delay( 2500 ).fadeOut( 400 );
-                          document.getElementById('spinner').style.display = 'none';
+                          clearInput();
+                          var links = result.links;
+                          var tags = result.tags;
+                          reloadGallery(links, tags);
                         })
                         .catch((error)=>{
+                          document.getElementById('spinner').style.display = 'none';
                           console.error('Error while Search By Image:', error);
                         });
+                        }
+                        reader.readAsDataURL(uploader.files[0]);
                       }
                   </script>
           <!-- Delete Button -->
@@ -186,7 +190,6 @@ function addTags(){
 //RUN when SEARCH TAG is clicked  
 var selectedImages = [];
 function searchTags(){
-    jQuery("#my_nanogallery2").nanogallery2('destroy');
     var input = document.getElementById("input").value.toLowerCase().trim();
     var inputArray = input.split(",").map(item=> item.trim());
     var jsonBody = {
@@ -208,45 +211,56 @@ function searchTags(){
       console.log('Successfully Found Images by Tag: ', result);
       clearInput();
       var links = result.links;
-      var items = [];
-      
-      links.forEach(element => {
-        var n = element.lastIndexOf("/")+1;
-        var elname = element.substring(n, element.length);
-        console.log(elname);
-        var item = {};
-        item.src = elname,
-        item.srct = elname,
-        item.title = elname
-        console.log(item);
-        items.push(item);
-      });
-
-      if(items.length == 0){
-        document.getElementById("items_result").innerHTML = "No Images Found. Please try other tags.";
-        document.getElementById("deleteBtn").style.visibility = "hidden";
+      var tags = [];
+      if(("tags" in result)){
+        tags = result.tags;
       } else {
-        document.getElementById("items_result").innerHTML = "Displaying Images for: " + input;
-        document.getElementById("deleteBtn").style.visibility = "visible";
+        tags = inputArray;
       }
-
-      //Display Images - SRC: https://codepen.io/Kris-B/pen/RyaLaG
-      //Nano Gallery Functions - https://codepen.io/Kris-B/pen/wJKowg
-      jQuery("#my_nanogallery2").nanogallery2({
-        thumbnailSelectable :   true,   // enables selection mode
-        items,
-        thumbnailWidth:         'auto',
-        thumbnailHeight:        150,
-        itemsBaseURL: 'https://ass2-images-1.s3.amazonaws.com/',
-        thumbnailHoverEffect2: null,
-        locationHash: false
-      });
-      document.getElementById('spinner').style.display = 'none';
-      document.getElementById("addTagsDiv").style.display = "none";
+      reloadGallery(links, tags);
     })
     .catch((error)=>{
       console.error('Error while POST:', error);
+      document.getElementById('spinner').style.display = 'none';
     })
+}
+
+//Nano Gallery Reload
+function reloadGallery(links, tags){
+  jQuery("#my_nanogallery2").nanogallery2('destroy');
+  var items = []
+  links.forEach(element => {
+    var n = element.lastIndexOf("/")+1;
+    var elname = element.substring(n, element.length);
+    console.log(elname);
+    var item = {};
+    item.src = elname,
+    item.srct = elname,
+    item.title = elname
+    console.log(item);
+    items.push(item);
+  });
+
+  if(items.length == 0){
+    document.getElementById("items_result").innerHTML = "No Images Found. Please try other tags.";
+  } else {
+    document.getElementById("items_result").innerHTML = "Displaying: " + tags;
+  }
+
+  //Display Images - SRC: https://codepen.io/Kris-B/pen/RyaLaG
+  //Nano Gallery Functions - https://codepen.io/Kris-B/pen/wJKowg
+  jQuery("#my_nanogallery2").nanogallery2({
+    thumbnailSelectable :   true,   // enables selection mode
+    items,
+    thumbnailWidth:         'auto',
+    thumbnailHeight:        150,
+    itemsBaseURL: 'https://ass2-images-1.s3.amazonaws.com/',
+    thumbnailHoverEffect2: null,
+    locationHash: false
+  });
+  document.getElementById('spinner').style.display = 'none';
+  document.getElementById("addTagsDiv").style.display = "none";
+  document.getElementById("deleteBtn").style.visibility = "hidden";
 }
 
 $("#my_nanogallery2").on( 'itemSelected.nanogallery2 itemUnSelected.nanogallery2', function() {
@@ -268,6 +282,7 @@ $("#my_nanogallery2").on( 'itemSelected.nanogallery2 itemUnSelected.nanogallery2
   } else {
     document.getElementById("addTagsDiv").style.display = "none";
   }
+  document.getElementById("deleteBtn").style.visibility = selectedImages.length > 0 ? "visible" : "hidden";
 });
 
 // Delete selected Images
@@ -358,12 +373,12 @@ window.onload = function(){
   var uploader = document.getElementById('uploadBtn');
   uploader.accept = 'image/*';
 
-  //Display Tags
+  //Display ALL Tags
   displayAllTags();
 
     //Clear Input on listener
     $('#input').on('change textInput input propertychange', function(){
-        console.log("Input changed");
+        //console.log("Input changed");
         var v = document.getElementById("input").value;
         if(v.length > 0){
             document.getElementById("clearBtn").style.visibility = "visible";
@@ -374,8 +389,8 @@ window.onload = function(){
     
 }
 
+//Display All Tags
 function displayAllTags(){
-
   document.getElementById("tags_container").innerHTML = '';
   document.getElementById('spinner2').style.display = 'block';
   fetch(_config.api.findTagsUrl,{
@@ -396,7 +411,8 @@ function displayAllTags(){
 
         //Add listener to each tag to append to Input 
         tag.addEventListener('click', function() { 
-            console.log("clicked");
+            //console.log("clicked");
+            $("#sizeWeight").click();
             var inputBox = document.getElementById("input");
             if(inputBox.value === ""){
                 inputBox.value += element;
