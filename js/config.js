@@ -1,3 +1,5 @@
+/** Config File for the functions on each page */
+
 window._config ={
     cognito:{
         userPoolId: 'us-east-1_wR9mama0w',
