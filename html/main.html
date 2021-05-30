@@ -13,9 +13,15 @@
     <title>Dashboard</title>
     <!-- Cognito scripts -->
     <script src="../js/amazon-cognito-identity.min.js"></script>
+    <script src="../js/aws-sdk-2.918.0.min.js"></script>
     <script src="../js/config.js"></script>
+
+    <!-- Google Sign In -->
+    <meta name="google-signin-client_id" content="939395917142-f9bmb97fv5jr60be20nahrrh8taer9f7.apps.googleusercontent.com">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
 <body>
+<div id="wholePage" style="visibility:hidden;">
     <nav class="navbar navbar-inverse">
         <div class="container-fluid">
           <div class="navbar-header">
@@ -52,9 +58,12 @@
     <div class="alert-box success">Image Successfully Uploaded</div>
     </div>
   </div>
+</div>
 </body>
 
 <script>
+
+//Cognito Validate Session & User
 var data = {
   UserPoolId: _config.cognito.userPoolId,
   ClientId: _config.cognito.clientId,
@@ -63,6 +72,7 @@ var data = {
 var userPool = new AmazonCognitoIdentity.CognitoUserPool(data);
 var cognitoUser = userPool.getCurrentUser();
 var idToken;
+var isSignedIn = false;
 
 window.onload = function(){
   if(cognitoUser != null){
@@ -84,20 +94,57 @@ window.onload = function(){
         document.getElementById("email").innerHTML = result[4].getValue();
         //document.getElementById("lname").innerHTML = result[3].getValue();
       });
-      
     });
-  } else {
-    alert("Invalid session. Please login!");
-    window.location.href= "login.html";
+  } 
+  else if(sessionStorage.getItem("idToken") != null){
+      console.log("Session exists");
+      idToken = sessionStorage.getItem("idToken");
   }
+  else {
+    const hashObj = window.location.hash.replace('#', '').split('&').reduce((prev, item) => { return Object.assign({[item.split('=')[0]]: item.split('=')[1]}, prev); }, {});
+    if(hashObj.error){
+      console.log("Could not hash URL");
+    }
+    idToken = hashObj.id_token;
+    console.log("idToken: " + idToken);
+    sessionStorage.setItem("idToken", idToken);
+  } 
+
+  //Test if the ID token works
+  fetch(_config.api.findTagsUrl,{
+      method: 'GET',
+      headers:{
+        "jwt_token": idToken
+      }
+    })
+    .then(response =>{
+      console.log(response.status);
+      if(response.status != 200){
+        console.log('ID Token Invalid');
+        alert("Please sign in");
+        logout();
+      }
+      return response.json()
+    })
+    .then(result => {
+      document.getElementById("wholePage").style.visibility = "visible";
+      console.log('ID Token Valid');
+    })
+    //Logs users out if the token doesn't work
+    .catch((error)=>{
+        console.error('Error get', error);
+        alert("Please sign in");
+        logout();
+    });
 }
 
 function logout(){
   if (cognitoUser != null){
     cognitoUser.signOut();
     console.log("logged out");
-    window.location.href= "login.html";
   }
+  sessionStorage.clear();
+  window.location.href= "login.html";
 }
 
 //Image Upload Function
